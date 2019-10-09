@@ -6,12 +6,14 @@ print(df)
 df$POS.Entry.Mode <- gsub("[[:punct:]]", "", df$POS.Entry.Mode)
 df$POS.Entry.Mode <- gsub(pattern = "", replacement = 000, x = df$POS.Entry.Mode)
 
+df$POS_DATA <- gsub("[[:punct:]]", "", df$POS_DATA)
+df$POS_DATA <- gsub(pattern = "", replacement = 000, x = df$POS_DATA)
 df$POS.Entry.Mode = as.factor(df$POS.Entry.Mode)
 df$PROCESSING_CODE = as.factor(df$PROCESSING_CODE)
 df$Response.Code = as.factor(df$Response.Code)
 df$Merchant.Category.Code = as.factor(df$Merchant.Category.Code)
 df$POS_DATA = as.(df$POS_DATA)
-print(df$POS_DATA)
+
 
 print(df$POS.Entry.Mode)
 print(df$Response.Code)
