@@ -1,35 +1,33 @@
-pathvar <-"/home/gayatri/Fortiate/Build/Workspaces/R/ML_Transaction-model_R/data.csv"
-df = read.csv(pathvar)
+pathvar <-"/home/gayatri/Fortiate/Build/Workspaces/R/ML_Transaction-model_R/data_csv.csv"
+df = read.csv(pathvar,,colClasses='character')
+df = df[c("PROCESSING_CODE","POS_DATA","TRANSACTION_AMOUNT","CARD_ACCEPTOR_ACTIVITY","CODE_ACTION","POS_ENTRY_MODE")]
 
+
+library(testthat)
 test_that("path is correct",{
-  expect_match(pathvar,"/home/gayatri/Fortiate/Build/Workspaces/R/ML_Transaction-model_R/data.csv")
+  expect_match(pathvar,"/home/gayatri/Fortiate/Build/Workspaces/R/ML_Transaction-model_R/data_csv.csv")
 })
-df$X = NULL
 x<- dput(names(df))
 print(x)
 
-names = c("Merchant.Category.Code", "POS.Entry.Mode", "POS_DATA", "PROCESSING_CODE", 
-          "Response.Code", "Transaction.Amount")
-identical(x,names)
+names = c("PROCESSING_CODE","POS_DATA","TRANSACTION_AMOUNT","CARD_ACCEPTOR_ACTIVITY","CODE_ACTION","POS_ENTRY_MODE")
 
 test_that("columns are correct",{
   expect_identical(x,names)
 })
-df$POS_DATA = as.integer(df$POS_DATA)
-format(df$POS_DATA,sci=FALSE)
-options("scipen"=100, "digits"=12)
-print(df$POS_DATA,digits = 21)
 
-df$POS.Entry.Mode <- gsub("[[:punct:]]", "", df$POS.Entry.Mode)
-df$POS.Entry.Mode <- gsub(pattern = "", replacement = 000, x = df$POS.Entry.Mode)
-df$POS_DATA <- gsub("[[:punct:]]", 0, df$POS_DATA)
+library(plyr)
+df$POS_ENTRY_MODE = as.character(df$POS_ENTRY_MODE)
+df$POS_ENTRY_MODE[df$POS_ENTRY_MODE == "???"] <- "000"
 
-
-df$POS.Entry.Mode = as.factor(df$POS.Entry.Mode)
-df$Response.Code = as.factor(df$Response.Code)
+df$POS_ENTRY_MODE = as.factor(df$POS_ENTRY_MODE)
+NROW(df$POS_ENTRY_MODE)
+df$CODE_ACTION = as.factor(df$CODE_ACTION)
+NROW(df$CODE_ACTION)
 df$PROCESSING_CODE = as.factor(df$PROCESSING_CODE)
-df$Merchant.Category.Code = as.factor(df$Merchant.Category.Code)
-
+NROW(df$PROCESSING_CODE)
+df$CARD_ACCEPTOR_ACTIVITY = as.factor(df$CARD_ACCEPTOR_ACTIVITY)
+NROW(df$CARD_ACCEPTOR_ACTIVITY)
 
 df$TERM_CARD_READ_CAP <- sapply(strsplit(as.character(df$POS_DATA),''), "[", 1)
 df$TERM_CH_VERI_CAP <- sapply(strsplit(as.character(df$POS_DATA),''), "[", 2)
@@ -46,4 +44,25 @@ df$PIN_ENTRY_IND <- sapply(strsplit(as.character(df$POS_DATA),''), "[", 12)
 df$POS_DATA =NULL
 
 
+library(caTools)
+results = sample.split(df$CODE_ACTION,SplitRatio = 0.8)
+df.train = df[results == TRUE, ]
+df.test = df[results == FALSE, ]
+
+NROW(df.train)
+NROW(df.test)
+
+library(rpart)
+
+classifier = rpart(CODE_ACTION ~ .,data = df.train)
+
+predictions = predict(classifier,newdata = df.test)
+confusionMatrix(table(df.test$CODE_ACTION,predictions))
+printaccuracy = function(cm){
+  correct.predictions = sum(diag(cm))
+  total.predictions = sum(cm)
+  accuracy = (correct.predictions/ total.predictions)*100
+  print(accuracy)
+}
+printaccuracy(cm)
 
